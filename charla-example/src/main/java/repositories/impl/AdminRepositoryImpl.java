@@ -36,7 +36,7 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     @Override
     public Either<BusinessError, Boolean> deleteAdmin(AdminUser adminUser) {
-        admin_user_list.remove(adminUser.getCode());
+        admin_user_list.put(adminUser.getCode(), adminUser);
         return Either.right(true);
     }
 }

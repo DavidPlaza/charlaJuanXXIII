@@ -30,9 +30,10 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Either<BusinessError, Boolean> deleteAdmin(String cod, String codRequester) {
-        return this.checkUserExist(cod)
+        return this.checkAdminExist(cod)
+                .flatMap(this::checkIsAdmin)
                 .flatMap(__ -> checkDifferentUsers(cod, codRequester))
-                .map(__ -> createAdminUserObject(cod, codRequester, true))
+                .map(__ -> createAdminUserObject(cod, codRequester, false))
                 .flatMap(adminRepository::deleteAdmin);
     }
 
@@ -56,5 +57,17 @@ public class AdminServiceImpl implements AdminService {
         return adminRepository.getUserAdmin(adminUser.getCode())
                 .map(__ -> adminRepository.updateAdmin(adminUser))
                 .orElseGet(() -> adminRepository.insertAdmin(adminUser));
+    }
+
+    private Either<BusinessError, AdminUser> checkAdminExist(String cod) {
+        return adminRepository.getUserAdmin(cod)
+                .map(Either::<BusinessError, AdminUser>right)
+                .orElse(Either.left(new BusinessError("Admin dont exits")));
+    }
+
+    private Either<BusinessError, AdminUser> checkIsAdmin(AdminUser adminUser) {
+        return adminUser.isAdmin()
+                ? Either.right(adminUser)
+                : Either.left(new BusinessError("Admin dont exists is 0"));
     }
 }
